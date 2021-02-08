@@ -4,8 +4,10 @@ import com.tianruoxi.server.pojo.Admin;
 import com.tianruoxi.server.service.IAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,6 +19,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * @author：Tianruoxi
  * @date：2021/2/7 13:44
  */
+
+@Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Autowired
@@ -31,6 +35,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     auth.userDetailsService(userDetailsService()).passwordEncoder(passwordEncoder());
   }
 
+  // 不走拦截链，放行路径
+  @Override
+  public void configure(WebSecurity web) throws Exception {
+    web.ignoring().antMatchers(
+      "/login",
+      "/logout",
+      "/css/**",
+      "/js/**",
+      "/index.html",
+      "favicon.icon",
+      "/doc.html",
+      "/webjars/**",
+      "/swagger-resources",
+      "/v2/api-docs/**",
+      "/captcha"
+    );
+  }
+
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     // 使用jwt不需要csrf
@@ -41,9 +63,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
       .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
       .and()
       .authorizeRequests()
-      // 允许未认证进行访问以下路径
-      .antMatchers("/login", "/logout").permitAll()
-      // 以上路径除外，其余所有路径请求均要认证。
+      // 所有路径请求均要认证。
       .anyRequest().authenticated()
       .and()
       // 禁用缓存

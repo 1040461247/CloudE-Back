@@ -14,7 +14,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -28,6 +30,7 @@ import java.util.Map;
  * @author Tianruoxi
  * @since 2021-02-05
  */
+
 @Service
 public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements IAdminService {
 
@@ -40,14 +43,21 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
   @Value("${jwt.tokenHead}")
   private String tokenHead;
   @Autowired
-  AdminMapper adminMapper;
+  private AdminMapper adminMapper;
 
   // 登录之后返回token
   @Override
-  public RespBean login(String username, String password, HttpServletRequest request) {
+  public RespBean login(String username, String password, String code, HttpServletRequest request) {
+    String captcha = (String) request.getSession().getAttribute("captcha");
+    if(StringUtils.isEmpty(code) || !captcha.equalsIgnoreCase(code)) {
+      return RespBean.error("验证码输入错误，请从新输入！");
+    }
     // 登录
     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
     if (null == userDetails || passwordEncoder.matches(password, userDetails.getPassword())) {
+      System.out.println(userDetails);
+      System.out.println("==========================");
+      System.out.println(passwordEncoder.matches(password, userDetails.getPassword()));
       return RespBean.error("用户名或密码错误");
     }
     if(!userDetails.isEnabled()) {
@@ -66,6 +76,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
 
     return RespBean.success("登陆成功", tokenMap);
   }
+
 
   // 根据用户名获取用户
   @Override

@@ -2,6 +2,7 @@ package com.tianruoxi.server.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.tianruoxi.server.pojo.Admin;
+import org.springframework.stereotype.Repository;
 
 /**
  * <p>
@@ -11,6 +12,8 @@ import com.tianruoxi.server.pojo.Admin;
  * @author Tianruoxi
  * @since 2021-02-05
  */
+
+@Repository
 public interface AdminMapper extends BaseMapper<Admin> {
 
 }
